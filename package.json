@@ -1,0 +1,30 @@
+{
+  "name": "markdown-pp-js",
+  "version": "1.0.0",
+  "description": "Markdown pre-processor in Javascript",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MikeRalphson/markdown-pp-js.git"
+  },
+  "keywords": [
+    "markdown",
+    "md",
+    "preprocessor",
+    "pre-processor",
+    "markdownpp",
+    "markdown-pp"
+  ],
+  "author": "Mike Ralphson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MikeRalphson/markdown-pp-js/issues"
+  },
+  "homepage": "https://github.com/MikeRalphson/markdown-pp-js#readme"
+}
