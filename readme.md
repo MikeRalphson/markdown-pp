@@ -2,7 +2,8 @@
 Markdown Preprocessor (MarkdownPP)
 ==================================
 
-The Markdown Preprocessor is a Python module designed to add extended features
+The Markdown Preprocessor is a JavaScript port of a 
+[Python module](https://github.com/jreese/markdown-pp), designed to add extended features
 on top of the excellent Markdown syntax defined by John Gruber.  These additions
 are mainly focused on creating larger technical documents without needing to use
 something as heavy and syntactically complex as Docbook.
@@ -19,7 +20,7 @@ As an example, this document in raw format is named "readme.mdpp", and the
 generated document from MarkdownPP is named "readme.md" so that GitHub can find
 and process that document when viewing the repository.
 
-[![Build Status](https://travis-ci.org/jreese/markdown-pp.svg?branch=master)](https://travis-ci.org/jreese/markdown-pp)
+[![Build Status](https://travis-ci.org/MikeRalphson/markdown-pp-js.svg?branch=master)](https://travis-ci.org/MikeRalphson/markdown-pp-js)
 
 1\.  [Installation and Usage](#installationandusage)  
 2\.  [Modules](#modules)  
@@ -39,18 +40,17 @@ and process that document when viewing the repository.
 ----------------------
 
 Currently, you'll need to download the source code from [GitHub][repo] or clone
-the repository, and the run the installation script manually.
+the repository. When the package has been published to npm, you can do:
 
-    pip install MarkdownPP
+    npm install markdown-pp-js --save
 
-There are two components to the project: a Python module, `MarkdownPP`, and a
-Python script that acts as a simple command line interface to the module,
-`markdown-pp`.
+There are two components to the project: a JavaScript module, `index.js`, and a
+a simple command line interface to the module, `markdownpp`.
 
 Assuming you have a file named `foo.mdpp`, you can generate the preprocessed
 file `foo.md` by running the following command:
 
-    $ markdown-pp foo.mdpp -o foo.md
+    $ node markdownpp foo.mdpp -o foo.md
 
 If you do not specify an output file name, the results will be printed to
 stdout, enabling them to be piped to another command.
@@ -58,12 +58,12 @@ stdout, enabling them to be piped to another command.
 By default, all available modules are enabled. You can specify a list of
 modules to exclude:
 
-    $ markdown-pp foo.mdpp -o foo.md -e latexrender,youtubembed
+    $ node markdownpp foo.mdpp -o foo.md -e latexrender,youtubembed
 
 To see usage instructions, including a list of enabled modules, supply the
 -h or --help arguments:
 
-    $ markdown-pp --help
+    $ node markdownpp --help
 
 
 <a name="modules"></a>
@@ -178,7 +178,7 @@ the document to be included in the list.
 ### 2.5\. LaTeX Rendering
 
 Lines and blocks of lines beginning and ending with $ are rendered as LaTeX,
-using [QuickLaTeX](http://www.holoborodko.com/pavel/quicklatex/).
+using Google's charting engine.
 
 For example,
 
@@ -186,8 +186,7 @@ For example,
 
 becomes
 
-![\displaystyle \int x^2 = \frac{x^3}{3} + C](http://quicklatex.com/cache3/ea/ql_0f9331171ded7fa9ef38e57fccf74aea_l3.png "\displaystyle \int x^2 = \frac{x^3}{3} + C")
-
+![latex](https://chart.googleapis.com/chart?cht=tx&chl=%5Cdisplaystyle%20%5Cint%20x%5E2%20%3D%20%5Cfrac%7Bx%5E3%7D%7B3%7D%20%2B%20C)
 
 <a name="youtubeembeds"></a>
 
@@ -203,7 +202,7 @@ For example,
 
 becomes
 
-[![Link to Youtube video](images/youtube/7aEYoP5-duY.png)](http://www.youtube.com/watch?v=7aEYoP5-duY)
+[![Link to Youtube video](http://img.youtube.com/vi/7aEYoP5-duY/0.jpg)](http://www.youtube.com/watch?v=7aEYoP5-duY)
 
 
 <a name="examples"></a>
@@ -263,4 +262,4 @@ existing modules, are also appreciated.
 
 *	[Markdown Preprocessor on GitHub][repo]
 
-[repo]: http://github.com/jreese/markdown-pp "Markdown Preprocessor on GitHub"
+[repo]: http://github.com/MikeRalphson/markdown-pp-js "Markdown Preprocessor on GitHub"

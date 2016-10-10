@@ -2,7 +2,8 @@
 Markdown Preprocessor (MarkdownPP)
 ==================================
 
-The Markdown Preprocessor is a Python module designed to add extended features
+The Markdown Preprocessor is a JavaScript port of a 
+[Python module](https://github.com/jreese/markdown-pp), designed to add extended features
 on top of the excellent Markdown syntax defined by John Gruber.  These additions
 are mainly focused on creating larger technical documents without needing to use
 something as heavy and syntactically complex as Docbook.
@@ -19,40 +20,11 @@ As an example, this document in raw format is named "readme.mdpp", and the
 generated document from MarkdownPP is named "readme.md" so that GitHub can find
 and process that document when viewing the repository.
 
-[![Build Status](https://travis-ci.org/jreese/markdown-pp.svg?branch=master)](https://travis-ci.org/jreese/markdown-pp)
+[![Build Status](https://travis-ci.org/MikeRalphson/markdown-pp-js.svg?branch=master)](https://travis-ci.org/MikeRalphson/markdown-pp-js)
 
 !TOC
 
-Installation and Usage
-----------------------
-
-Currently, you'll need to download the source code from [GitHub][repo] or clone
-the repository, and the run the installation script manually.
-
-    pip install MarkdownPP
-
-There are two components to the project: a Python module, `MarkdownPP`, and a
-Python script that acts as a simple command line interface to the module,
-`markdown-pp`.
-
-Assuming you have a file named `foo.mdpp`, you can generate the preprocessed
-file `foo.md` by running the following command:
-
-    $ markdown-pp foo.mdpp -o foo.md
-
-If you do not specify an output file name, the results will be printed to
-stdout, enabling them to be piped to another command.
-
-By default, all available modules are enabled. You can specify a list of
-modules to exclude:
-
-    $ markdown-pp foo.mdpp -o foo.md -e latexrender,youtubembed
-
-To see usage instructions, including a list of enabled modules, supply the
--h or --help arguments:
-
-    $ markdown-pp --help
-
+!INCLUDE "usage.mdpp"
 
 Modules
 --------
@@ -105,33 +77,7 @@ parameter will yield:
 
 ### IncludeURLs
 
-Facilitates the inclusion of remote files, such as files kept in a subversion
-or GitHub repository. Like Include, the IncludeURL module can replace a line of
-the form `!INCLUDEURL "http://your.domain/path/to/filename"` with the contents
-returned from that url, recursively including additional remote urls as needed.
-
-IncludeURL runs immediately after the Include module finishes executing. This
-means that is it possible to include local files that then require remote files,
-but impossible parse !INCLUDE statements found in remote files. This is prevent
-ambiguity as to where the file would be located.
-
-Remote file `http://your.domain/foo.mdpp`:
-
-    Hello
-
-Remote file `http://your.domain/bar.mdpp`:
-
-    Remote World!
-
-Local file `index.mdpp`:
-
-    !INCLUDEURL "http://your.domain/foo.mdpp"
-    !INCLUDEURL "http://your.domain/bar.mdpp"
-
-Compiling `index.mdpp` with the IncludeURL module will produce the following:
-
-    Hello
-    Remote World!
+!INCLUDEURL "https://gist.githubusercontent.com/MikeRalphson/a37efaa827657dffa96ed5c34f644f53/raw/9dd5e8218e920d6dcfa8d4c7da5ecb5c68677aa0/markdown-pp-js-includeurls.md"
 
 ### Table of Contents
 
@@ -154,7 +100,7 @@ the document to be included in the list.
 ### LaTeX Rendering
 
 Lines and blocks of lines beginning and ending with $ are rendered as LaTeX,
-using [QuickLaTeX](http://www.holoborodko.com/pavel/quicklatex/).
+using Google's charting engine.
 
 For example,
 
@@ -230,4 +176,4 @@ References
 
 !REF
 
-[repo]: http://github.com/jreese/markdown-pp "Markdown Preprocessor on GitHub"
+[repo]: http://github.com/MikeRalphson/markdown-pp-js "Markdown Preprocessor on GitHub"
