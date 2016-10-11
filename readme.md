@@ -2,7 +2,7 @@
 Markdown Preprocessor (MarkdownPP)
 ==================================
 
-The Markdown Preprocessor is a JavaScript port of a 
+The Markdown Preprocessor is a JavaScript rewrite of a 
 [Python module](https://github.com/jreese/markdown-pp), designed to add extended features
 on top of the excellent Markdown syntax defined by John Gruber.  These additions
 are mainly focused on creating larger technical documents without needing to use
@@ -64,6 +64,7 @@ To see usage instructions, including a list of enabled modules, supply the
 -h or --help arguments:
 
     $ node markdownpp --help
+
 
 
 <a name="modules"></a>

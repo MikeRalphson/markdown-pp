@@ -13,7 +13,7 @@
 
 
 # Test youtube embed
-!VIDEO "http://www.youtube.com/embed/7aEYoP5-duY"\n"
+!VIDEO "http://www.youtube.com/embed/7aEYoP5-duY"
 
 
 # Test shift 1

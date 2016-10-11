@@ -3,18 +3,41 @@ var path = require('path');
 
 var fetch = require('./fetch.js');
 
-var inFlight = 0;
-var toc = [];
-var ref = [];
-var refpos = -1;
-var tocpos = -1;
+var inFlight; // number of sections being processed (incl. from urls)
+var toc; // table of contents
+var tocpos; // position to insert table of contents
+var ref; // list of refs
+var refpos; // position to insert refs
+var headings; // keeps track of toc section numbers
+var anchors; // for unique naming
+
+function reset() {
+    inFlight = 1;
+    toc = [];
+    ref = [];
+    refpos = -1;
+    tocpos = -1;
+    headings = [];
+    anchors = [];
+}
+
+function clone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
 
 function slug(s) {
     return s.toLowerCase().split(' ').join('');
 }
 
-function clone(obj) {
-    return JSON.parse(JSON.stringify(obj));
+function uniqueName(anchor) {
+    var s = anchor;
+    var suffix = 0;
+    while (anchors.indexOf(s)>=0) {
+        suffix = (suffix + 1);
+        s = anchor+'-'+suffix;
+    }
+    anchors.push(s);
+    return s;
 }
 
 function writeFile(outfile,out) {
@@ -22,12 +45,16 @@ function writeFile(outfile,out) {
 }
 
 function process(s,outfile,out,state,callback) {
-   var lines = s.split('\r').join('').split('\n');
-   if (refpos > state.outpos) {
+    var startLevel = 0;
+    var lines = s.split('\r').join('').split('\n');
+    if (refpos > state.outpos) {
        refpos += lines.length;
-   }
-   for (var l=0;l<lines.length;l++) {
+    }
+    for (var l=0;l<lines.length;l++) {
        var line = lines[l];
+       if (line.startsWith('===')) { // && inFlight == 1?
+           startLevel = -1;
+       }
        if (line.startsWith('!TOC')) {
            tocpos = state.outpos;
            line = undefined;
@@ -36,13 +63,41 @@ function process(s,outfile,out,state,callback) {
            refpos = state.outpos;
            line = undefined;
        }
+       if (line && line.startsWith('!INCLUDEURL "file:')) {
+           line = line.replace('://',':').replace('!INCLUDEURL "file:','!INCLUDE "');
+       }
        if (line && line.startsWith('!INCLUDE ')) {
-           var components = line.match(/^\!INCLUDE \"(.+)\"/);
+           var components = line.match(/^\!INCLUDE \"(.+)\"(.*)$/);
            if (components) {
                var includeFile = path.resolve(components[1]);
-               var include = fs.readFileSync(includeFile,'utf8').split('\r').join('').split('\n');
-               lines = lines.slice(0, l).concat(include).concat(lines.slice(l+1));
-               line = lines[l];
+               try {
+                   var include = fs.readFileSync(includeFile,'utf8').split('\r').join('').split('\n');
+                   var shift = 0;
+                   if (components[2]) shift = parseInt(components[2].split(',').join('').trim(),10);
+                   if (shift) {
+                       for (var i in include) {
+                           if ((include[i].startsWith('===')) && (i>0)) {
+                               include[i-1] = new Array(2).join('#')+' '+include[i-1]; // #
+                               include[i] = '';
+                               i--;
+                           }
+                           else if ((include[i].startsWith('---')) && (i>0)) {
+                               include[i-1] = new Array(3).join('#')+' '+include[i-1]; // ##
+                               include[i] = '';
+                               i--;
+                           }
+                           if (include[i].startsWith('#')) {
+                               include[i] = new Array(shift+1).join('#')+include[i];
+                           }
+                       }
+                   }
+                   inFlight++;
+                   process(include.join('\n')+'\n',outfile,out,state,writeFile);
+               }
+               catch (ex) {
+                   console.log(ex);
+               }
+               line = undefined;
            }
        }
        if (line && line.startsWith('!INCLUDEURL ')) {
@@ -52,24 +107,25 @@ function process(s,outfile,out,state,callback) {
                var url = components[1];
                fetch.get(url,{},clone(state),function(err, resp, body, newState) {
                    if (!err) {
-                       var include = process(body,outfile,out,newState,writeFile);
+                       process(body,outfile,out,newState,writeFile);
                    }
                });
                line = undefined;
            }
        }
        if (line && (line.startsWith('---')) && (l>0)) {
-           var anchor = '<a name="'+slug(lines[l-1].split('#').join(''))+'"></a>';
+           var name = uniqueName(slug(lines[l-1].split('#').join('')));
+           var anchor = '<a name="'+name+'"></a>';
            out.splice(state.outpos-1,0,anchor);
            state.outpos++;
-           state.headings[0]++;
+           headings[0]++;
            out.splice(state.outpos-1,0,'');
            state.outpos++;
-           toc.splice(0,0,state.headings[0]+'\\.  ['+out[out.length-1]+'](#'+slug(out[out.length-1])+')  ');
-           out[out.length-1] = state.headings[0]+'\\. '+out[out.length-1];
+           toc.splice(0,0,headings[0]+'\\.  ['+out[out.length-1]+'](#'+name+')  ');
+           out[out.length-1] = headings[0]+'\\. '+out[out.length-1];
        }
        if (line && line.match(/^\#+/)) {
-           var level = -1;
+           var level = startLevel;
            var newline = line;
            var prefix = '';
            while (newline.startsWith('#')) {
@@ -77,20 +133,21 @@ function process(s,outfile,out,state,callback) {
                prefix += '#';
                level++;
            }
-           while (state.headings.length<level) {
-               state.headings.push(0);
+           while (headings.length<level) {
+               headings.push(0);
            }
-           while (state.headings.length>level) {
-               state.headings.pop();
+           while (headings.length>level) {
+               headings.pop();
            }
-           state.headings[state.headings.length-1] += 1;
+           headings[level-1] += 1;
            newline = newline.trim();
-           var anchor = '<a name="'+slug(newline.split('#').join(''))+'"></a>';
+           var name = uniqueName(slug(newline.split('#').join('')));
+           var anchor = '<a name="'+name+'"></a>';
            var heading = '';
-           for (var h of state.headings) {
+           for (var h of headings) {
                heading += (heading ? '.' : '')+h;
            }
-           toc.splice(0,0,heading+'\\.  ['+newline+'](#'+slug(newline)+')  ');
+           toc.splice(0,0,heading+'\\.  ['+newline+'](#'+name+')  ');
            newline = prefix+' '+heading+'\\. '+newline;
            out.splice(state.outpos,0,newline);
            out.splice(state.outpos,0,'');
@@ -119,10 +176,10 @@ function process(s,outfile,out,state,callback) {
            out.splice(state.outpos,0,line);
            state.outpos++;
        }
-   }
+    }
 
-   inFlight--;
-   if (inFlight<=0) {
+    inFlight--;
+    if (inFlight<=0) {
        if (tocpos >= 0) {
            for (var t of toc) {
                out.splice(tocpos,0,t);
@@ -134,17 +191,17 @@ function process(s,outfile,out,state,callback) {
            }
        }
        callback(outfile,out);
-   }
-   return out;
+    }
+    return out;
 }
 
 module.exports = {
 
     render: function(infile, outfile) {
         var state = {};
-        inFlight = 1;
         state.outpos = 0;
-        state.headings = [0];
+        reset();
+        headings.push(0);
         fs.readFile(infile,'utf8',function(err, s){
             process(s,outfile,[],state,writeFile);
         });
