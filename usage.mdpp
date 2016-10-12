@@ -1,10 +1,14 @@
 Installation and Usage
 ----------------------
 
-Currently, you'll need to download the source code from [GitHub][repo] or clone
-the repository. When the package has been published to npm, you can do:
+You can download or clone the source code from [GitHub][repo], or you
+can install from the npm repository with: 
 
     npm install markdown-pp-js --save
+
+or
+
+    yarn install markdown-pp-js --saved
 
 There are two components to the project: a JavaScript module, `index.js`, and a
 a simple command line interface to the module, `markdownpp`.
