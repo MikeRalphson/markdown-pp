@@ -11,6 +11,8 @@ var refpos; // position to insert refs
 var headings; // keeps track of toc section numbers
 var anchors; // for unique naming
 
+var modules = {};
+
 function reset() {
     inFlight = 1;
     toc = [];
@@ -41,7 +43,14 @@ function uniqueName(anchor) {
 }
 
 function writeFile(outfile,out) {
-    fs.writeFile(outfile,out.join('\n'),'utf8');
+    if (outfile) {
+        fs.writeFile(outfile,out.join('\n'),'utf8');
+    }
+    else {
+        for (var o of out) {
+            console.log(o);
+        }
+    }
 }
 
 function process(s,outfile,out,state,callback) {
@@ -55,18 +64,18 @@ function process(s,outfile,out,state,callback) {
        if (line.startsWith('===')) { // && inFlight == 1?
            startLevel = -1;
        }
-       if (line.startsWith('!TOC')) {
+       if (modules.toc && line.startsWith('!TOC')) {
            tocpos = state.outpos;
            line = undefined;
        }
-       if (line && line.startsWith('!REF')) {
+       if (modules.ref && line && line.startsWith('!REF')) {
            refpos = state.outpos;
            line = undefined;
        }
-       if (line && line.startsWith('!INCLUDEURL "file:')) {
+       if (modules.includeurl && line && line.startsWith('!INCLUDEURL "file:')) {
            line = line.replace('://',':').replace('!INCLUDEURL "file:','!INCLUDE "');
        }
-       if (line && line.startsWith('!INCLUDE ')) {
+       if (modules.include && line && line.startsWith('!INCLUDE ')) {
            var components = line.match(/^\!INCLUDE \"(.+)\"(.*)$/);
            if (components) {
                var includeFile = path.resolve(components[1]);
@@ -100,7 +109,7 @@ function process(s,outfile,out,state,callback) {
                line = undefined;
            }
        }
-       if (line && line.startsWith('!INCLUDEURL ')) {
+       if (modules.includeurl && line && line.startsWith('!INCLUDEURL ')) {
            var components = line.match(/^\!INCLUDEURL \"(.+)\"/);
            if (components) {
                inFlight++;
@@ -113,7 +122,7 @@ function process(s,outfile,out,state,callback) {
                line = undefined;
            }
        }
-       if (line && (line.startsWith('---')) && (l>0)) {
+       if (modules.toc && line && (line.startsWith('---')) && (l>0)) {
            var name = uniqueName(slug(lines[l-1].split('#').join('')));
            var anchor = '<a name="'+name+'"></a>';
            out.splice(state.outpos-1,0,anchor);
@@ -124,7 +133,7 @@ function process(s,outfile,out,state,callback) {
            toc.splice(0,0,headings[0]+'\\.  ['+out[out.length-1]+'](#'+name+')  ');
            out[out.length-1] = headings[0]+'\\. '+out[out.length-1];
        }
-       if (line && line.match(/^\#+/)) {
+       if (modules.toc && line && line.match(/^\#+/)) {
            var level = startLevel;
            var newline = line;
            var prefix = '';
@@ -155,16 +164,16 @@ function process(s,outfile,out,state,callback) {
            state.outpos += 3;
            line = undefined;
        }
-       if (line && line.startsWith('!VIDEO')) {
+       if (modules.youtubeembed && line && line.startsWith('!VIDEO')) {
            var components = line.split('/');
            var video = components[components.length-1].replace('"','').replace("'",'');
            line = '[![Link to Youtube video](http://img.youtube.com/vi/'+video+'/0.jpg)](http://www.youtube.com/watch?v='+video+')';
        }
-       if (line && line.startsWith('$') && line.endsWith('$')) {
-           line = line.substr(1,line.length-2);
+       if (modules.latexrender && line && line.startsWith('$') && line.endsWith('$')) {
+           line = line.substr(1,line.length-2); // TODO blocks
            line = '![latex](https://chart.googleapis.com/chart?cht=tx&chl='+encodeURIComponent(line)+')';
        }
-       if (line) {
+       if (modules.ref && line) {
            var rline = line.replace(/`.*`/,'``');
            var components = rline.match(/\[(.+)\]:\ (.+)\ \"(.*)\"/);
            if (components && !rline.startsWith('    ') && !rline.startsWith('\t')) {
@@ -180,12 +189,12 @@ function process(s,outfile,out,state,callback) {
 
     inFlight--;
     if (inFlight<=0) {
-       if (tocpos >= 0) {
+       if (modules.toc && tocpos >= 0) {
            for (var t of toc) {
                out.splice(tocpos,0,t);
            }
        }
-       if (refpos >= 0) {
+       if (modules.ref && refpos >= 0) {
            for (var r of ref) {
                out.splice(refpos+toc.length,0,r);
            }
@@ -194,6 +203,13 @@ function process(s,outfile,out,state,callback) {
     }
     return out;
 }
+
+modules.include = true;
+modules.includeurl = true;
+modules.youtubeembed = true;
+modules.latexrender = true;
+modules.toc = true;
+modules.ref = true;
 
 module.exports = {
 
@@ -205,6 +221,8 @@ module.exports = {
         fs.readFile(infile,'utf8',function(err, s){
             process(s,outfile,[],state,writeFile);
         });
-    }
+    },
+
+    modules : modules
 
 };

@@ -26,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/MikeRalphson/markdown-pp-js/issues"
   },
-  "homepage": "https://github.com/MikeRalphson/markdown-pp-js#readme"
+  "homepage": "https://github.com/MikeRalphson/markdown-pp-js#readme",
+  "dependencies": {
+    "yargs": "^5.0.0"
+  }
 }
