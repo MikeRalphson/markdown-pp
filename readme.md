@@ -2,7 +2,7 @@
 Markdown Preprocessor (MarkdownPP)
 ==================================
 
-The Markdown Preprocessor is a JavaScript rewrite of a 
+The Markdown Preprocessor is a JavaScript rewrite of John Reese's
 [Python module](https://github.com/jreese/markdown-pp), designed to add extended features
 on top of the excellent Markdown syntax defined by John Gruber.  These additions
 are mainly focused on creating larger technical documents without needing to use
