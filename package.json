@@ -7,8 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "sh -c compare",
-    "testbb": "busybox sh -c compare"
+    "test": "sh -c ./compare",
+    "testbb": "busybox sh -c ./compare"
   },
   "repository": {
     "type": "git",
