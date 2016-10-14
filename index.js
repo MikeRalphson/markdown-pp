@@ -1,7 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 
-var fetch = require('./fetch.js');
+var fetch = require('node-fetch');
 
 var inFlight; // number of sections being processed (incl. from urls)
 var toc; // table of contents
@@ -114,11 +114,13 @@ function process(s,outfile,out,state,callback) {
            if (components) {
                inFlight++;
                var url = components[1];
-               fetch.get(url,{},clone(state),function(err, resp, body, newState) {
-                   if (!err) {
-                       process(body,outfile,out,newState,writeFile);
-                   }
-               });
+			   var newState = clone(state);
+               fetch(url).then(function(res){
+			       return res.text();
+			   })
+			   .then(function(body){
+                   process(body,outfile,out,newState,writeFile);
+			   });
                line = undefined;
            }
        }

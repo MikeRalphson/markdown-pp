@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/MikeRalphson/markdown-pp-js#readme",
   "dependencies": {
+    "node-fetch": "^1.6.3",
     "yargs": "^5.0.0"
   }
 }
